@@ -1,9 +1,9 @@
 
 name: "qwen_4b"
-repo_id: "Qwen/Qwen2.5-7B-Instruct"  # Your specific fine-tuned version
+repo_id: "Qwen/Qwen3-4B-Instruct-2507"  # Your specific fine-tuned version
 torch_dtype: "bfloat16"
 inject_generation_tags: true
-attn_implementation: "flash_attention_2"
+attn_implementation: "eager"
 
 lora:
   r: 16

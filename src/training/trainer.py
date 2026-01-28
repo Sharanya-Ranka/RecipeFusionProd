@@ -46,7 +46,7 @@ def run_training(cfg, model, tokenizer, train_dataset):
         assistant_only_loss=cfg.training.assistant_only_loss,
         lr_scheduler_type="cosine",
         warmup_ratio=cfg.training.warmup_ratio,
-        push_to_hub=cfg.training.get("push_to_hub", False),
+        push_to_hub=cfg.training.get("push_to_hub", True),
         report_to="tensorboard",
         dataset_kwargs={
             "add_special_tokens": False,
