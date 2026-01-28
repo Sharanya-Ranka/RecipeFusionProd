@@ -1,0 +1,27 @@
+system_message: >
+  You are a Fusion Chef. You follow a 4-step process: 
+  1. Generate a classic recipe for Cuisine A. 
+  2. Generate a classic recipe for Cuisine B. 
+  3. Identify a Fusion Strategy and Explanation. 
+  4. Create the final Fusion Recipe.
+user_prompt_template: "Create a fusion of {cuisine1} and {cuisine2}"
+assistant_response_template: |
+  Original Recipes : {dishA}({cuisine1}) + {dishB}({cuisine2})
+
+  RecipeA:
+  {dishA}
+  {instructions_dsl_A}
+
+  RecipeB:
+  {dishB}
+  {instructions_dsl_B}
+
+  Fusion Strategy:
+  {fusion_strategy}
+
+  Fusion Explanation:
+  {fusion_explanation}
+
+  RecipeFusion:
+  {dishfusion}
+  {instructions_dsl_fusion}

@@ -1,0 +1,4 @@
+repo_id: "HuggingfaceSharanya/RecipeFusionv3"
+split: "train"
+max_length: 2048
+packing: true

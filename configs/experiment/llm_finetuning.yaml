@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - override /model: qwen_4b
+  - override /hardware: a10_gpu
+
+training:
+  learning_rate: 2e-4
+  max_steps: 1000
+  assistant_only_loss: true
+  push_to_hub: true

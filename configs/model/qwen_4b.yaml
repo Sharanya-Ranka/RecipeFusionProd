@@ -1,0 +1,16 @@
+
+name: "qwen_4b"
+repo_id: "Qwen/Qwen2.5-7B-Instruct"  # Your specific fine-tuned version
+torch_dtype: "bfloat16"
+inject_generation_tags: true
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: "all-linear"
+  
+quantization:
+  load_in_4bit: true
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_quant_type: "nf4"

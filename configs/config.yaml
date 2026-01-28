@@ -1,0 +1,11 @@
+defaults:
+  - model: qwen_4b
+  - hardware: a10_gpu
+  - data: fusion_v1
+  - /paths: default_paths
+  - /prompts: fusion_chef
+  - _self_
+
+# Shared global settings
+seed: 43
+debug: false
