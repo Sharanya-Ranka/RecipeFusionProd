@@ -43,7 +43,7 @@ def build_model_and_tokenizer(model_cfg):
         model_cfg.repo_id,
         quantization_config=bnb_config,
         device_map="auto",
-        attn_implementation="eager",
+        attn_implementation=model_cfg.attn_implementation,
     )
 
     # 3. Load Tokenizer
@@ -52,7 +52,5 @@ def build_model_and_tokenizer(model_cfg):
     # Apply the injection based on the Hydra config flag
     if model_cfg.get("inject_generation_tags", False):
         tokenizer = inject_chat_generation_tags(tokenizer)
-
-    return model, tokenizer
 
     return model, tokenizer

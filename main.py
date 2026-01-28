@@ -10,8 +10,7 @@ from src.training.trainer import run_training
 def main(cfg: DictConfig):
     # breakpoint()
     # 1. Load and Format Data
-    raw_data = load_fusion_dataset(cfg.data.repo_id)
-    # We use the prompts from our YAML config!
+    raw_data = load_fusion_dataset(cfg.data)
     formatted_data = apply_chat_formatting(raw_data, cfg.prompts)
 
     breakpoint()
@@ -19,7 +18,7 @@ def main(cfg: DictConfig):
     model, tokenizer = build_model_and_tokenizer(cfg.model)
 
     # 3. Run the Training Pipeline
-    run_training(cfg, model, tokenizer, formatted_data["train"])
+    run_training(cfg, model, tokenizer, formatted_data)
 
 
 if __name__ == "__main__":
