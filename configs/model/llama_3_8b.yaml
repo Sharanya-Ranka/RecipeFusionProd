@@ -1,0 +1,17 @@
+
+name: "llama_8b"
+repo_id: "meta-llama/Llama-3.1-8B"  # Your specific fine-tuned version
+torch_dtype: "bfloat16"
+inject_generation_tags: false
+attn_implementation: "eager"
+
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+  target_modules: "all-linear"
+  
+quantization:
+  load_in_4bit: true
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_quant_type: "nf4"
