@@ -4,6 +4,7 @@ defaults:
   - data: fusion_v1
   - /paths: default_paths
   - /prompts: fusion_chef
+  - training: train_default
   - _self_
 
 # Shared global settings
