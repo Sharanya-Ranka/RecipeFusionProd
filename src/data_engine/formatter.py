@@ -4,34 +4,6 @@ from datasets import load_dataset, Dataset
 
 logger = logging.getLogger(__name__)
 
-# System message for the assistant
-system_message = """You are a Fusion Chef. You follow a 4-step process: 1. Generate a classic recipe for Cuisine A. 2. Generate a classic recipe for Cuisine B. 3. Identify a Fusion Strategy and Explanation. 4. Create the final Fusion Recipe."""
-
-# User prompt that combines the user query and the schema
-user_prompt_template = """Create a fusion of {cuisine1} and {cuisine2}"""
-
-assistant_response_template = """
-Original Recipes : {dishA}({cuisine1}) + {dishB}({cuisine2})
-
-RecipeA:
-{dishA}
-{instructions_dsl_A}
-
-RecipeB:
-{dishB}
-{instructions_dsl_B}
-
-Fusion Strategy:
-{fusion_strategy}
-
-Fusion Explanation:
-{fusion_explanation}
-
-RecipeFusion:
-{dishfusion}
-{instructions_dsl_fusion}
-"""
-
 
 def get_compressed_json_str(data):
     try:
@@ -48,20 +20,9 @@ def get_compressed_json_str(data):
 def create_conversation(sample, templates):
     try:
         fillers = dict(
-            cuisine1=sample["recipe_a"]["cuisine"],
-            cuisine2=sample["recipe_b"]["cuisine"],
-            dishA=sample["recipe_a"]["title"],
-            dishB=sample["recipe_b"]["title"],
-            dishfusion=sample["fusion_dish_name"],
-            instructions_dsl_A=get_compressed_json_str(
-                sample["recipe_a"]["recipe_json_str"]
-            ),
-            instructions_dsl_B=get_compressed_json_str(
-                sample["recipe_b"]["recipe_json_str"]
-            ),
-            instructions_dsl_fusion=get_compressed_json_str(sample["fusion_recipe"]),
-            fusion_strategy=sample["fusion_strategy"],
-            fusion_explanation=sample["fusion_explanation"],
+            CUISINE_A=sample.get("cuisine_a", "Unknown Cuisine A"),
+            CUISINE_B=sample.get("cuisine_b", "Unknown Cuisine B"),
+            raw_response=sample.get("raw_response", {}),
         )
         system_message = templates["system_message"]
         user_prompt = templates["user_prompt_template"].format(**fillers)

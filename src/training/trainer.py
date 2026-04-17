@@ -31,7 +31,7 @@ def run_training(cfg, model, tokenizer, train_dataset):
     sft_args = SFTConfig(
         output_dir=cfg.paths.output_dir,
         max_length=cfg.training.max_length,
-        packing=cfg.training.packing,
+        packing=False,  # cfg.training.packing,
         max_steps=cfg.training.max_steps,
         per_device_train_batch_size=cfg.training.batch_size,
         gradient_accumulation_steps=cfg.training.grad_accum,
@@ -48,9 +48,10 @@ def run_training(cfg, model, tokenizer, train_dataset):
         warmup_ratio=cfg.training.warmup_ratio,
         push_to_hub=cfg.training.get("push_to_hub", True),
         report_to="tensorboard",
+        pad_to_multiple_of=8,
         dataset_kwargs={
             "add_special_tokens": False,
-            "append_concat_token": True,
+            # "append_concat_token": True,
         },
     )
 

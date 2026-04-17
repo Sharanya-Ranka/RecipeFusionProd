@@ -1,12 +1,12 @@
 learning_rate: 2e-4
-max_steps: 240
+max_steps: 20
 batch_size: 1
 grad_accum: 2
 optimizer: "paged_adamw_32bit"
 logging_steps: 1
-save_steps: 20
+save_steps: 10
 warmup_ratio: 0.1
 assistant_only_loss: false
 push_to_hub: true
-packing: true
+packing: false
 max_length: 8192
