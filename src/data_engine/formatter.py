@@ -45,12 +45,12 @@ def create_conversation(sample, templates, with_assistant_message=True):
         return {"messages": []}
 
 
-def apply_chat_formatting(dataset: Dataset, templates) -> Dataset:
+def apply_chat_formatting(dataset: Dataset, templates, with_assistant_message=True) -> Dataset:
     logger.info("Applying chat formatting to the dataset...")
     # Convert dataset to OAI messages
     formatted_dataset = dataset.map(
         create_conversation,
-        fn_kwargs={"templates": templates},
+        fn_kwargs={"templates": templates, "with_assistant_message": with_assistant_message},
         batched=False,
         remove_columns=dataset.column_names,  # Standard practice to keep the repo clean
     )

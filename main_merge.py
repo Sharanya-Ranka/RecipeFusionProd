@@ -11,6 +11,7 @@ load_dotenv()
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
+    breakpoint()
     merge_and_upload(cfg)
 
 

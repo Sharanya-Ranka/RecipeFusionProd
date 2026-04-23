@@ -1,3 +1,3 @@
 hub_my_namespace: HuggingfaceSharanya
-adapter_repo_id: ${hub_my_namespace}/${model.name}
-merged_repo_id: ${adapter_repo_id}_merged
+adapter_repo_id: ${merging.hub_my_namespace}/${model.name}
+merged_repo_id: ${merging.adapter_repo_id}_merged

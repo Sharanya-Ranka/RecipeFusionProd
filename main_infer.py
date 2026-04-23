@@ -3,6 +3,7 @@ from omegaconf import DictConfig
 from src.inference.server import get_vllm, run_vllm
 from src.data_engine.loader import load_fusion_dataset
 from dotenv import load_dotenv
+import os
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ def save_to_file(cfg, raw_data, inference_outputs):
         combined_results.append(result_entry)
 
     # Ensure the parent directory exists
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    os.makedirs(os.path.dirname(cfg.inference.inference_output_path), exist_ok=True)
 
     # 4. Write to JSON
     with open(output_path, "w", encoding="utf-8") as f:
@@ -39,7 +40,7 @@ def save_to_file(cfg, raw_data, inference_outputs):
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
-    raw_data = load_fusion_dataset(cfg.data, split="test", shuffle=False)
+    raw_data = load_fusion_dataset(cfg.data, split="test", shuffle=False).select(range(5))
     vllm_inst = get_vllm(cfg)
     inference_outputs = run_vllm(cfg, vllm_inst, raw_data)
     save_to_file(cfg, raw_data, inference_outputs)
