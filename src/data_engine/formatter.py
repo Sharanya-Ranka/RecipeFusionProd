@@ -17,24 +17,29 @@ def get_compressed_json_str(data):
         return "{}"
 
 
-def create_conversation(sample, templates):
+def create_conversation(sample, templates, with_assistant_message=True):
     try:
         fillers = dict(
             CUISINE_A=sample.get("cuisine_a", "Unknown Cuisine A"),
             CUISINE_B=sample.get("cuisine_b", "Unknown Cuisine B"),
             raw_response=sample.get("raw_response", {}),
         )
+
         system_message = templates["system_message"]
         user_prompt = templates["user_prompt_template"].format(**fillers)
-        assistant_response = templates["assistant_response_template"].format(**fillers)
 
-        return {
-            "messages": [
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_prompt},
-                {"role": "assistant", "content": assistant_response},
-            ]
-        }
+        messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        if with_assistant_message:
+            assistant_response = templates["assistant_response_template"].format(
+                **fillers
+            )
+            messages.append({"role": "assistant", "content": assistant_response})
+
+        return {"messages": messages}
     except KeyError as e:
         logger.error(f"Missing key in sample data: {e}")
         return {"messages": []}

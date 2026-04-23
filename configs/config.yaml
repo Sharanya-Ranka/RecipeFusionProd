@@ -5,8 +5,10 @@ defaults:
   - /paths: default_paths
   - /prompts: fusion_chef
   - training: train_default
-  - optional merging: merge_default
+  - inference:  inference_default
+  - merging: merge_default
   - _self_
+  # - optional merging: merge_default
 
 # Shared global settings
 seed: 43

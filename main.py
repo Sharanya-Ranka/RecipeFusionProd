@@ -13,7 +13,7 @@ load_dotenv()
 def main(cfg: DictConfig):
     # breakpoint()
     # 1. Load and Format Data
-    raw_data = load_fusion_dataset(cfg.data)
+    raw_data = load_fusion_dataset(cfg.data, split="train")
     formatted_data = apply_chat_formatting(raw_data, cfg.prompts)
 
     # breakpoint()
