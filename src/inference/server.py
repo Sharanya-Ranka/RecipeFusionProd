@@ -24,47 +24,35 @@ def get_vllm(cfg):
 
 def run_vllm(cfg, llm: LLM, dataset: Dataset):
     """
-    Runs vLLM inference on a dataset by batching, formatting, and collecting outputs.
+    Runs vLLM inference on the entire dataset at once, leveraging 
+    vLLM's internal continuous batching and scheduling.
     """
-    # 1. Format the dataset using the provided context function
-    # cfg.prompts should contain the system, user, and assistant templates
+    # 1. Format the dataset
     formatted_dataset = apply_chat_formatting(dataset, cfg.prompts, with_assistant_message=False)
-
-    logger.info("Formatted dataset for inference")
+    logger.info(f"Formatted dataset for inference. Total samples: {len(formatted_dataset)}")
     
     # 2. Extract SamplingParams from config
-    # Adjust the keys based on your specific configuration structure
     sampling_params = SamplingParams(
         temperature=getattr(cfg.inference.sampling, "temperature", 0.3),
         top_p=getattr(cfg.inference.sampling, "top_p", 0.95),
         max_tokens=getattr(cfg.inference.sampling, "max_tokens", 10000),
     )
 
-    all_outputs = []
-    batch_size = cfg.inference.max_num_seqs
-    num_batches = np.ceil(len(formatted_dataset) / batch_size)
+    # 3. Extract all formatted messages at once
+    # For a HF Dataset, formatted_dataset[:] returns a dict of lists
+    all_formatted_prompts = formatted_dataset["messages"]
+
+    # 4. Run vLLM chat inference on the full list
+    # vLLM will respect the max_num_seqs set during initialization 
+    # and handle the queue internally.
+    logger.info("Starting global inference session...")
+    all_outputs = llm.chat(
+        messages=all_formatted_prompts, 
+        sampling_params=sampling_params,
+        use_tqdm=True 
+    )
     
-    # 3. Chunk dataset and run inference
-    # formatted_dataset is a Hugging Face Dataset; we iterate in strides
-    for i in range(0, len(formatted_dataset), batch_size):
-        # Slice the dataset for the current chunk
-        batch = formatted_dataset[i : i + batch_size]
-        
-        # 'batch' from a HF Dataset slice is a dict of lists: {"messages": [[...], [...]]}
-        formatted_prompts = batch["messages"]
-
-        # Run vLLM chat inference
-        # use_tqdm is optional but helpful for tracking progress
-        chunk_outputs = llm.chat(
-            messages=formatted_prompts, 
-            sampling_params=sampling_params,
-            use_tqdm=True 
-        )
-        
-        # 4. Collect all RequestOutput objects
-        all_outputs.extend(chunk_outputs)
-
-        logger.info(f"Completed inference on examples {i} to {i+batch_size} of {len(formatted_dataset)}")
+    logger.info(f"Completed inference on all {len(all_outputs)} examples.")
 
     return all_outputs
     
