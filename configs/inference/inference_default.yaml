@@ -1,18 +1,18 @@
 
-# model_name: qwen_4b_finetuned
-model_name: llama_8b_finetuned
+model_name: qwen_4b_finetuned
+# model_name: llama_8b_finetuned
 
-# hf_model_id: HuggingfaceSharanya/qwen_4b_merged
-hf_model_id: HuggingfaceSharanya/llama_8b_merged
+hf_model_id: HuggingfaceSharanya/qwen_4b_merged
+# hf_model_id: HuggingfaceSharanya/llama_8b_merged
 # hf_model_id: "Qwen/Qwen3-4B-Instruct-2507" 
 # hf_model_id: "meta-llama/Llama-3.1-8B-Instruct"
 
 gpu_memory_utilization: 0.95
-max_num_seqs: 5
+max_num_seqs: 14
 
 inference_output_path: "./results/${inference.model_name}.json"
 
 sampling:
   temperature: 0.3
   top_p: 0.95
-  max_tokens: 700
+  max_tokens: 9000

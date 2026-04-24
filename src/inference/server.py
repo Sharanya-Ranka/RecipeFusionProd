@@ -64,7 +64,7 @@ def run_vllm(cfg, llm: LLM, dataset: Dataset):
         # 4. Collect all RequestOutput objects
         all_outputs.extend(chunk_outputs)
 
-        logger.info(f"Completed inference on chunk {i+1} of {num_batches}")
+        logger.info(f"Completed inference on examples {i} to {i+batch_size} of {len(formatted_dataset)}")
 
     return all_outputs
     
