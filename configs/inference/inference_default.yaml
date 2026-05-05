@@ -10,7 +10,7 @@ hf_model_id: "Qwen/Qwen3-4B-Instruct-2507"
 gpu_memory_utilization: 0.98
 max_num_seqs: 15
 
-inference_output_path: "./results/${inference.model_name}.json"
+inference_output_path: "./data/inference/${inference.model_name}.json"
 
 sampling:
   temperature: 0.3

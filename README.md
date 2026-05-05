@@ -37,7 +37,7 @@ In this project we seek to validate LoRA on the task of "Recipe Fusion" - fusing
 
 ## 📖 Overview
 *   **The Goal:** To train small open source language models (Llama8b, Qwen4b etc.) to produce high quality recipe fusions (on par with LLMs like ChatGPT5) and be able to represent recipes using DAGs (Directed Acyclic Graphs).
-*   **The Scope:** A representative set of 35 cuisines from all over the world was chosen. $\binom{35}{2}=561$ total examples were generated - 1 for each cuisine pair, and was divided into 502 training examples and 59 test examples. The "French" cuisine was kept completely in the test set to check for true generalizability
+*   **The Scope:** A representative set of 34 cuisines from all over the world was chosen. $\binom{34}{2}=561$ total examples were generated - 1 for each cuisine pair, and was divided into 502 training examples and 59 test examples. The "French" cuisine was kept completely in the test set to check for true generalizability
 *   **The Impact:** We find that finetuning models with QLoRA enhances their performance in creating recipe fusions. Finetuned models gain an average of 0.75 points compared to their base models when evaluated (by teacher-LLMs) for creativity, realism and viability. 
 
 ---

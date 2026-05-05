@@ -1,0 +1,48 @@
+# Evaluation sub-pipeline to choose - 
+# parse (parse responses) : This step logs requests that couldn't be parsed so that their format can be fixed
+# format_fix (fix format using an LLM)
+# heuristic_requests (form and send batched requests)
+# monitor_batches (monitor the state of requests, download raw results on completion)
+# heuristic_eval (save LLM heuristic eval responses)
+# deterministic_eval
+# analyze
+# Common config
+eval_step: "parse"
+
+folder_path:
+
+input_filenames:
+
+
+# Fix format additional config
+format_fix_indices:
+  - []
+
+# Heuristic evaluation additional config
+evaluator_models:
+  - provider: openai
+    model: gpt-5-mini
+    name: gpt5mini
+    config:
+      reasoning:
+        effort: low
+  - provider: google
+    model: gemini-2.5-flash
+    name: gemini25flash
+    config:
+      thinking_config:
+        include_thoughts: false
+        thinking_budget: 0
+
+create_requests: true
+send_requests: false
+
+# Heuristic evals, deterministic evals common filepath
+evaluations_granular_filename: "recipefusion_evaluations"
+
+# Common config
+suffixes:
+  inference_responses: "_inference_responses"
+  parse: "_parsed"
+  format_fixed: "_format_fixed"
+  heuristic_requests: null # Unused
