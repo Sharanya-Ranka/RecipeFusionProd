@@ -16,6 +16,7 @@ from src.evaluation.heuristic_requests_batched import (
 )
 from src.evaluation.heuristic_evaluation import extract_heuristic_evaluations
 from src.evaluation.deterministic_evaluation import extract_deterministic_evaluations
+from src.evaluation.analysis import form_granular_df, graphing_pipeline
 from src.utils.utils import save_to_jsonl, load_from_jsonl
 from src.utils.types import EvaluationKey, RecipeFusionInferenceKey
 
@@ -33,7 +34,7 @@ def eval_step_parse(cfg: DictConfig):
     logger.info("Starting step: parse")
     eval_cfg = cfg.evaluation
 
-    base_folderpath = eval_cfg.folder_path
+    base_folderpath = eval_cfg.evaluation_folder_path
 
     for filename in eval_cfg.filenames:
         filepath = os.path.join(
@@ -61,7 +62,7 @@ def eval_step_format_fix(cfg: DictConfig):
     logger.info("Starting step: format_fix")
     eval_cfg = cfg.evaluation
 
-    base_folderpath = eval_cfg.folder_path
+    base_folderpath = eval_cfg.evaluation_folder_path
 
     for filename, indices_to_fix in zip(
         eval_cfg.filenames, eval_cfg.format_fix_indices
@@ -85,11 +86,13 @@ def eval_step_heuristic_requests(cfg: DictConfig):
         logger.info("Creating heuristic evaluation requests")
         for filename in eval_cfg.filenames:
             filepath = os.path.join(
-                eval_cfg.folder_path, f"{filename}{eval_cfg.suffixes.parse}.jsonl"
+                eval_cfg.evaluation_folder_path,
+                f"{filename}{eval_cfg.suffixes.parse}.jsonl",
             )
             for evaluator in eval_cfg.evaluator_models:
                 output_filepath = os.path.join(
-                    eval_cfg.folder_path, f"{filename}_evalreq_{evaluator.name}.jsonl"
+                    eval_cfg.evaluation_folder_path,
+                    f"{filename}_evalreq_{evaluator.name}.jsonl",
                 )
                 createAndSaveBatchRequests(
                     filepath, output_filepath, evaluator, partial_id=filename
@@ -100,7 +103,8 @@ def eval_step_heuristic_requests(cfg: DictConfig):
         for filename in eval_cfg.filenames:
             for evaluator in eval_cfg.evaluator_models:
                 input_filepath = os.path.join(
-                    eval_cfg.folder_path, f"{filename}_evalreq_{evaluator.name}.jsonl"
+                    eval_cfg.evaluation_folder_path,
+                    f"{filename}_evalreq_{evaluator.name}.jsonl",
                 )
                 sendRequests(input_filepath, evaluator)
 
@@ -117,12 +121,13 @@ def eval_step_batch_monitor(cfg: DictConfig):
     for filename, evaluator_name, batch_id, batch_type in eval_cfg.batch_info:
         batch_info = monitorBatch(batch_id, batch_type)
         output_filepath = os.path.join(
-            eval_cfg.folder_path, f"{filename}_evalres_{evaluator_name}.jsonl"
+            eval_cfg.evaluation_folder_path,
+            f"{filename}_evalres_{evaluator_name}.jsonl",
         )
         if batch_type == "openai" and batch_info.status == "completed":
             saveBatchResultsOpenAI(batch_info.output_file_id, output_filepath)
             logger.info(f"Responses saved to {output_filepath}")
-        elif batch_type == "google" and batch_info.status.name == "JOB_STATE_SUCCEEDED":
+        elif batch_type == "google" and batch_info.state.name == "JOB_STATE_SUCCEEDED":
             saveBatchResultsGemini(batch_info.dest.file_name, output_filepath)
             logger.info(f"Responses saved to {output_filepath}")
         else:
@@ -136,19 +141,25 @@ def eval_step_heuristic_eval(cfg: DictConfig):
     logger.info("Starting step: heuristic_eval")
     eval_cfg = cfg.evaluation
     output_filepath = os.path.join(
-        eval_cfg.folder_path, eval_cfg.evaluations_granular_filename
+        eval_cfg.evaluation_folder_path,
+        f"{eval_cfg.evaluations_granular_filename}.jsonl",
     )
+
+    # Save empty data to clean up any previous records if the file already exists
+    save_to_jsonl([], output_filepath, "w", context="Heuristic Evals")
 
     for filename in eval_cfg.filenames:
         for evaluator in eval_cfg.evaluator_models:
             input_filepath = os.path.join(
-                eval_cfg.folder_path, f"{filename}_evalres_{evaluator.name}.jsonl"
+                eval_cfg.evaluation_folder_path,
+                f"{filename}_evalres_{evaluator.name}.jsonl",
             )
 
             heuristic_evaluations = extract_heuristic_evaluations(input_filepath)
+            heuristic_evals_json = [he.model_dump() for he in heuristic_evaluations]
 
             save_to_jsonl(
-                heuristic_evaluations, output_filepath, "a", context="Heuristic Evals"
+                heuristic_evals_json, output_filepath, "a", context="Heuristic Evals"
             )
 
 
@@ -157,25 +168,45 @@ def eval_step_deterministic_eval(cfg: DictConfig):
     logger.info("Starting step: deterministic evaluation")
     eval_cfg = cfg.evaluation
     output_filepath = os.path.join(
-        eval_cfg.folder_path, eval_cfg.evaluations_granular_filename
+        eval_cfg.evaluation_folder_path,
+        f"{eval_cfg.evaluations_granular_filename}.jsonl",
     )
 
     for filename in eval_cfg.filenames:
         input_filepath = os.path.join(
-            eval_cfg.folder_path, f"{filename}{eval_cfg.suffixes.parse}.jsonl"
+            eval_cfg.evaluation_folder_path,
+            f"{filename}{eval_cfg.suffixes.parse}.jsonl",
         )
 
-        heuristic_evaluations = extract_deterministic_evaluations(input_filepath)
+        deterministic_evaluations = extract_deterministic_evaluations(input_filepath)
+        deterministic_evals_json = [de.model_dump() for de in deterministic_evaluations]
 
         save_to_jsonl(
-            heuristic_evaluations, output_filepath, "a", context="Deterministic Evals"
+            deterministic_evals_json,
+            output_filepath,
+            "a",
+            context="Deterministic Evals",
         )
 
 
-def eval_step_analyze(cfg: DictConfig):
+def eval_step_analysis(cfg: DictConfig):
     """Analyzes the evaluation results."""
-    logger.info("Starting step: analyze")
-    pass
+    logger.info("Starting step: analysis")
+    eval_cfg = cfg.evaluation
+    records_filepath = os.path.join(
+        eval_cfg.evaluation_folder_path,
+        f"{eval_cfg.evaluations_granular_filename}.jsonl",
+    )
+    df = form_granular_df(eval_cfg, records_filepath)
+    output_filepath = os.path.join(
+        eval_cfg.evaluation_folder_path,
+        f"{eval_cfg.evaluations_granular_filename}.csv",
+    )
+
+    df.to_csv(output_filepath)
+
+    graphing_pipeline(eval_cfg, df)
+    logger.info("Completed step: analysis")
 
 
 # --- Main Entrypoint ---
@@ -191,12 +222,14 @@ def main(cfg: DictConfig):
         eval_step_format_fix(cfg)
     elif step == "heuristic_requests":
         eval_step_heuristic_requests(cfg)
+    elif step == "batch_monitor":
+        eval_step_batch_monitor(cfg)
     elif step == "heuristic_eval":
         eval_step_heuristic_eval(cfg)
     elif step == "deterministic_eval":
         eval_step_deterministic_eval(cfg)
-    elif step == "analyze":
-        eval_step_analyze(cfg)
+    elif step == "analysis":
+        eval_step_analysis(cfg)
     else:
         logger.error(f"Unknown evaluation step: {step}")
 

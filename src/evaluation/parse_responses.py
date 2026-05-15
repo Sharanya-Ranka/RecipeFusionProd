@@ -95,10 +95,10 @@ def extract_parts(output_string):
             extracted_data[key] = value.strip()
 
     # Helper function: safely extract content between headers
-    def get_section(start_header: str, end_header: str) -> str:
-        ends = f"^{end_header}"
+    def get_section(start_header: str, end_header: str = None) -> str:
+        ends = rf"^{end_header}" if end_header else r"\Z"
         # Look for the start header, capture everything lazily until an end header or the end of the string
-        pattern = rf"^{start_header}\s*(.*?)(?=(?:{ends})|\Z)"
+        pattern = rf"^{start_header}\s*(.*?)(?={ends})"
         match = re.search(pattern, output_string, re.DOTALL | re.MULTILINE)
         return match.group(1).strip() if match else ""
 
@@ -107,7 +107,7 @@ def extract_parts(output_string):
     recipe_a_block = get_section(r"RecipeA:", r"RecipeB:")
     recipe_b_block = get_section(r"RecipeB:", r"Fusion Explanation:")
     fusion_exp = get_section(r"Fusion Explanation:", r"RecipeFusion:")
-    recipe_fusion_block = get_section(r"RecipeFusion:", "")
+    recipe_fusion_block = get_section(r"RecipeFusion:")
 
     if fusion_exp:
         extracted_data["Fusion_Explanation"] = fusion_exp
@@ -136,6 +136,7 @@ def extract_parts(output_string):
     parse_recipe_block(recipe_a_block, "RecipeA")
     parse_recipe_block(recipe_b_block, "RecipeB")
     parse_recipe_block(recipe_fusion_block, "RecipeFusion")
+    breakpoint()
 
     return extracted_data
 
@@ -144,7 +145,8 @@ def parse_recipefusion_str(recipefusion_str):
     eval_str = apply_fixes(recipefusion_str)
     extracted_data = extract_parts(eval_str)
     errors = []
-    for recipe_key in ["RecipeA", "Recipe", "RecipeFusion"]:
+    breakpoint()
+    for recipe_key in ["RecipeA", "RecipeB", "RecipeFusion"]:
         if f"{recipe_key}_JSON_str" in extracted_data:
             try:
                 recipe_json_str = extracted_data[f"{recipe_key}_JSON_str"]

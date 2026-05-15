@@ -1,4 +1,4 @@
-from src.evaluation.utils import fill_prompt_template
+from src.utils.utils import fill_prompt_template
 
 BASE_PROMPT_TEMPLATE = """
 # Role

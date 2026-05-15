@@ -142,7 +142,7 @@ def validate_recipe_dag(recipe_json: dict) -> dict:
     return errors_description
 
 
-def run_deterministic_eval(recipe_json: dict, model_id: str) -> Evaluation:
+def run_deterministic_eval(recipe_json: dict) -> Evaluation:
     """
     Takes the parsed extraction dictionary, runs JSON and DAG validations on
     RecipeA, RecipeB, and RecipeFusion, and returns a consolidated Evaluation object.
@@ -162,7 +162,7 @@ def run_deterministic_eval(recipe_json: dict, model_id: str) -> Evaluation:
 
     # 3. Iterate through all three recipes
     for prefix in recipe_prefixes:
-        parsed_recipe = recipe_json.get(f"{prefix}_parsed")
+        parsed_recipe = recipe_json.get("extracted_data", {}).get(f"{prefix}_parsed")
 
         # Guard clause in case the JSON failed to parse in the previous step
         if not isinstance(parsed_recipe, dict):
@@ -198,34 +198,34 @@ def extract_deterministic_evaluations(filepath: str):
     return data
 
 
-if __name__ == "__main__":
-    # Hardcoded paths
-    FOLDER_PATH = r"D:\Sharanya Personal\RecipeResearch\Results"
-    INPUT_FILENAME = "llama_8b_base.json"
-    OUTPUT_FILENAME = "llama_8b_base_evals_deterministic.json"
+# if __name__ == "__main__":
+#     # Hardcoded paths
+#     FOLDER_PATH = r"D:\Sharanya Personal\RecipeResearch\Results"
+#     INPUT_FILENAME = "llama_8b_base.json"
+#     OUTPUT_FILENAME = "llama_8b_base_evals_deterministic.json"
 
-    # Ensure folder exists
-    if not os.path.exists(FOLDER_PATH):
-        os.makedirs(FOLDER_PATH)
+#     # Ensure folder exists
+#     if not os.path.exists(FOLDER_PATH):
+#         os.makedirs(FOLDER_PATH)
 
-    with open(os.path.join(FOLDER_PATH, INPUT_FILENAME), "r", encoding="utf-8") as f:
-        data = json.load(f)
+#     with open(os.path.join(FOLDER_PATH, INPUT_FILENAME), "r", encoding="utf-8") as f:
+#         data = json.load(f)
 
-    validator = Validator()
-    results_list = []
-    for entry in data:
-        output_str = entry["model_generated_response"]
-        # breakpoint()
-        results = validator.validate(output_str)
-        # print(json.dumps(results["recipe_validation"], indent=2))
-        results_list.append({"request_data": entry, "validation_results": results})
+#     validator = Validator()
+#     results_list = []
+#     for entry in data:
+#         output_str = entry["model_generated_response"]
+#         # breakpoint()
+#         results = validator.validate(output_str)
+#         # print(json.dumps(results["recipe_validation"], indent=2))
+#         results_list.append({"request_data": entry, "validation_results": results})
 
-        # print(json.dumps(results["recipe_validation"], indent=2))
-        # print()
-        # breakpoint()
+#         # print(json.dumps(results["recipe_validation"], indent=2))
+#         # print()
+#         # breakpoint()
 
-    # Save the results to a new JSON file
-    with open(os.path.join(FOLDER_PATH, OUTPUT_FILENAME), "w", encoding="utf-8") as f:
-        json.dump(results_list, f, indent=4)
+#     # Save the results to a new JSON file
+#     with open(os.path.join(FOLDER_PATH, OUTPUT_FILENAME), "w", encoding="utf-8") as f:
+#         json.dump(results_list, f, indent=4)
 
-    # print(json.dumps(results, indent=4))
+#     # print(json.dumps(results, indent=4))

@@ -98,7 +98,9 @@ def get_heuristic_eval_key_from_keystring(keystring: str) -> EvaluationKey:
     else:
         gd = mo.groupdict()
         return EvaluationKey(
-            RecipeFusionInferenceKey(gd["id"], gd["cuisinea"], gd["cuisineb"]),
+            inference_key=get_recipefusion_inference_key(
+                gd["id"], gd["cuisinea"], gd["cuisineb"]
+            ),
             evaluation_type="heuristic",
             dimension=gd["dimension"],
             evaluator_model=gd["evaluator"],

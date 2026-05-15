@@ -10,7 +10,7 @@ from src.utils.utils import (
 )
 from src.utils.types import Evaluation
 
-logging.basicConfig(filename="heuristic_eval_summarizer.log", level=logging.INFO)
+# logging.basicConfig(filename="heuristic_eval_summarizer.log", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +27,7 @@ def extract_info(eval_json):
 
     if eval_json.get("error", None) is not None:
         logger.info(f"Error in {eval_json}")
-        evaluation["values"] = dict(
+        evaluation.values = dict(
             score=score,
             rationale="RequestError",
         )
@@ -83,7 +83,7 @@ def extract_info(eval_json):
             rationale = "JSONDecodeError"
             logger.info(f"Information from {eval_json} JSON Decode error")
 
-    evaluation["value"] = dict(score=score, rationale=rationale)
+    evaluation.values = dict(score=score, rationale=rationale)
 
     return evaluation
 

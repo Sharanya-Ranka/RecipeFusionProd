@@ -2,21 +2,33 @@
 # parse (parse responses) : This step logs requests that couldn't be parsed so that their format can be fixed
 # format_fix (fix format using an LLM)
 # heuristic_requests (form and send batched requests)
-# monitor_batches (monitor the state of requests, download raw results on completion)
+# batch_monitor (monitor the state of requests, download raw results on completion)
 # heuristic_eval (save LLM heuristic eval responses)
 # deterministic_eval
-# analyze
+# analysis
 # Common config
-eval_step: "parse"
+# eval_step: "parse"
+eval_step: "analysis"
 
-folder_path:
+evaluation_folder_path: "${data_folderpath}/evaluation"
 
-input_filenames:
+filenames:
+  - qwen4bbase
+  - qwen4bft
+  - llama8bbase
+  - llama8bft
+  # - residual
+  # - chatgpt5mini
 
 
 # Fix format additional config
 format_fix_indices:
   - []
+
+# Monitor batches additional config
+# batch_info:
+#   - [qwen4bbase, gemini25flash, "batches/ua06pmyru09mp73rnswb31gqorzfgbw24xw2", google]
+#   - [llama8bft, gpt5mini, "batch_69f1f5a7cc708190a9efd3e6ab85909d", openai]
 
 # Heuristic evaluation additional config
 evaluator_models:
@@ -39,6 +51,11 @@ send_requests: false
 
 # Heuristic evals, deterministic evals common filepath
 evaluations_granular_filename: "recipefusion_evaluations"
+
+# Analysis config
+analysis:
+ filter_out_values: [rationale, RecipeA_json_errors, RecipeB_json_errors, RecipeFusion_json_errors, RecipeA_dag_errors, RecipeB_dag_errors, RecipeFusion_dag_errors]
+ drop_columns: [inference_key]
 
 # Common config
 suffixes:

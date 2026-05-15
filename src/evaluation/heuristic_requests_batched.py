@@ -79,12 +79,14 @@ def createAndSaveBatchRequests(
         cuisine_a = key.cuisine_a
         cuisine_b = key.cuisine_b
 
-        fusion_explain = dp["Fusion_Explanation"]
-        fusion_recipe = json.dumps(dp["RecipeFusion_JSON_parsed"])
+        breakpoint()
+
+        fusion_explain = dp["extracted_data"]["Fusion_Explanation"]
+        fusion_recipe = json.dumps(dp["extracted_data"]["RecipeFusion_parsed"])
 
         output_to_eval = f"# LLM Response to Evaluate\n\nCuisines: {cuisine_a} + {cuisine_b}\n\nFusion Explanation:\n{fusion_explain}\n\nFusion Recipe={fusion_recipe}"
         partial_key = get_heuristic_eval_key(
-            partial_id, cuisine_a, cuisine_b, evaluator_model, "np dimension"
+            partial_id, cuisine_a, cuisine_b, evaluator_model.name, "no dimension"
         )
         provider = evaluator_model.provider
         model = evaluator_model.model

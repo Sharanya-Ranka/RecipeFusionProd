@@ -1,6 +1,6 @@
 
-model_name: qwen_4b_base
-# model_name: llama_8b_finetuned
+# model_name: qwen_4b_base
+model_name: llama8bft
 
 # hf_model_id: HuggingfaceSharanya/qwen_4b_merged
 # hf_model_id: HuggingfaceSharanya/llama_8b_merged
@@ -10,7 +10,11 @@ hf_model_id: "Qwen/Qwen3-4B-Instruct-2507"
 gpu_memory_utilization: 0.98
 max_num_seqs: 15
 
-inference_output_path: "./data/inference/${inference.model_name}.json"
+inference_folderpath: "${data_folderpath}/inference"
+inference_name: "${inference.model_name}"
+inference_suffix: "_inference_responses"
+
+# inference_output_path: "./data/inference/${inference.model_name}.json"
 
 sampling:
   temperature: 0.3

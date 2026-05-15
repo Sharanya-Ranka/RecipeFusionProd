@@ -5,3 +5,8 @@ __pycache__/
 
 outputs/
 .ipynb_checkpoints
+.vscode
+
+/data
+
+*.log

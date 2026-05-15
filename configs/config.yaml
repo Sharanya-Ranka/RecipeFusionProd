@@ -7,9 +7,11 @@ defaults:
   - training: train_default
   - inference:  inference_default
   - merging: merge_default
+  - evaluation: evaluation_default
   - _self_
   # - optional merging: merge_default
 
 # Shared global settings
 seed: 43
 debug: false
+data_folderpath: "./data"
