@@ -181,7 +181,7 @@ def heuristic_cuisines_finetuning_impact(granular_df: pd.DataFrame) -> dict:
     # Sort values logically
     cuisine_scores = cuisine_scores.sort_values(by="cuisine")
 
-    breakpoint()
+    # breakpoint()
 
     # Plotting (Converted to Object-Oriented Style)
     fig, ax = plt.subplots(figsize=(16, 6))
@@ -296,10 +296,38 @@ def graphing_pipeline(cfg: DictConfig, df):
     logger.info("Graphing pipeline completed successfully.")
 
 
-# def perform_analysis_df(cfg: DictConfig, df: pd.DataFrame):
-#     analysis_cfg = cfg.analysis
+def perform_analysis(cfg: DictConfig, granular_df: pd.DataFrame):
+    analysis_cfg = cfg.analysis
 
-#     df = df.drop(columns=analysis_cfg.drop_columns)
-#     all_columns = df.columns
+    df = granular_df.loc[
+        (granular_df["evaluation_type"] == "heuristic")
+        & (granular_df["dimension2"] == "score")
+        & (~(granular_df["value"].isin([0, -1]))),
+    ].copy()  # Using .copy() to avoid SettingWithCopyWarning
 
-#     df.set_index()
+    conditions = [
+        df["id"].isin(["qwen4bft", "llama8bft"]),
+        df["id"].isin(["qwen4bbase", "llama8bbase"]),
+    ]
+    choices = ["finetuned", "base"]
+    df["model_status"] = np.select(conditions, choices, default="teacher")
+
+    example_eval_df = (
+        df.drop(columns=["inference_key"])
+        .pivot(
+            index=["id", "cuisine_a", "cuisine_b"],
+            columns=["evaluator_model", "dimension"],
+            values="value",
+        )
+        .reset_index()
+    )
+    breakpoint()
+
+    finetuning_impact_df = (
+        df.groupby(["id", "model_status", "evaluator_model"])["value"]
+        .mean()
+        .reset_index()
+    )
+    logger.info(
+        f"Heuristic summary scores for evaluated models\n{finetuning_impact_df}"
+    )

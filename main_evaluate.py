@@ -16,7 +16,11 @@ from src.evaluation.heuristic_requests_batched import (
 )
 from src.evaluation.heuristic_evaluation import extract_heuristic_evaluations
 from src.evaluation.deterministic_evaluation import extract_deterministic_evaluations
-from src.evaluation.analysis import form_granular_df, graphing_pipeline
+from src.evaluation.analysis import (
+    form_granular_df,
+    graphing_pipeline,
+    perform_analysis,
+)
 from src.utils.utils import save_to_jsonl, load_from_jsonl
 from src.utils.types import EvaluationKey, RecipeFusionInferenceKey
 
@@ -205,7 +209,9 @@ def eval_step_analysis(cfg: DictConfig):
 
     df.to_csv(output_filepath)
 
-    graphing_pipeline(eval_cfg, df)
+    # graphing_pipeline(eval_cfg, df)
+
+    perform_analysis(eval_cfg, df)
     logger.info("Completed step: analysis")
 
 

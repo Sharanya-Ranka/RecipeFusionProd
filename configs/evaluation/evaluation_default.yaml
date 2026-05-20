@@ -8,15 +8,15 @@
 # analysis
 # Common config
 # eval_step: "parse"
-eval_step: "analysis"
+eval_step: "deterministic_eval"
 
 evaluation_folder_path: "${data_folderpath}/evaluation"
 
 filenames:
   - qwen4bbase
-  - qwen4bft
-  - llama8bbase
-  - llama8bft
+  # - qwen4bft
+  # - llama8bbase
+  # - llama8bft
   # - residual
   # - chatgpt5mini
 
