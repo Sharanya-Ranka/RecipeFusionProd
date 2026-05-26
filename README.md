@@ -67,6 +67,45 @@ All evaluation presented here was done on test data only.
 ---
 
 
+## Conclusions
+*   **Summary:**
+  1) Validated the QLoRA technique of LLM finetuning to enhance performance on a custom creative task - generating Fusion Recipes.
+  2) Dataset and finetuned models available on HuggingFace.
+  3) We have deployed the finetuned models on AWS Sagemaker (through an Asynchronous Inference endpoint), as well as an app to view model generated outputs for custom inputs.
+  4) Code for the complete pipeline present in this repository.
+*   **Challenges:** 
+  1) Inference usually takes ~5 minutes per example (~5000 tokens) on a single A10 GPU (since the models output the two base-cuisine recipes and then the fusion recipe). These requests would time out on AWS Sagemaker hosted instances running the DJL (Deep Java Library) inference engine. I wasn't able to find any official solution for this, but a hack discovered while browsing through the opensource implementation was to tweak an environment variable (TODO).
+  2) The Synthetic Data generated has some issues. When prompted, the teacher model usually chooses the same base recipes (Ceviche for Peruvian cuisine, Jollof Rice for West African, BUtter Chicken for Indian etc.). This is perhaps because of the prompt to use 'iconic' recipes from the cuisines. This may cause a partial leakage of information into the test set.
+*   **Next Steps:** 
+  1) A new mode of recipe fusion  - To address Challenge #2 we can rerun the pipeline using a new mode of recipe fusion (where not only the original cuisines, but also their dishes are provided to the model). This mode would put a greater emphasis on the techniques of fusion rather than allowing the model to use safe / standard choices.
+  2) Experiments on amount of training data / training passes on quality - With additional cuisines / using several dishes per cuisine, we can test experimentally the effect of training data on the quality of fusions generated. Another interesting investigation would be the effect of the number of training passes/epochs on the quality.
+
+---
+
+## Repository Structure
+*   `main_*.py/`: Various python main files to kick off major pipelines.
+    * `main_train.py/`: Train (Finetune) LLM models and save LoRA weights.
+    * `main_merge.py/`: Merge the LoRA weights with the models' original weights (to give a single merged finetuned model).
+    * `main_infer.py/`: vLLM inference on finetuned models.
+    * `main_evaluate.py/`: Evaluation pipeline (Deterministic + Heuristic + Analysis). Includes batch mode evaluation requests to models for LLM-as-a-judge heuristic evaluation criteria.
+*   `data/`: Raw and processed datasets. (TODO)
+*   `src/`: Functions used by the main_* scripts.
+*   `tests/`: Testing for scripts.
+*   `assets/`: PNG files of generated plots.
+
+---
+
+## AI Acknowledgement
+AI Tools (Primarily Google Gemini) have been invaluable in speeding up the write-test-refactor loops, allowing me to focus on high level problem formulation, data engineering and software engineering challenges. All code has been iteratively modified, and optimized by me to fit the system's architectural constraints.
+
+At a more granular level:
+1) Problem design - I formulated the Recipe Fusion concept (initially as a Graph Neural Network problem, but then pivoted to LLM-finetunig) while AI assisted with generating scaffolding code.
+2) Data and ML Ops - Designed the synthetic data generation pipeline, conducted training experiments across Kaggle, Vast.ai and investigated API endpoints (eventually settling on Asynchronous Inference on AWS Sagemaker). AI again assisted with code, and requested iterations / refinements.
+3) Evaluation - Created a standardized evaluation framework and consolidated a multi-dimensional heuristic evaluation component. AI helped flesh out the LLM-as-a-judge prompts.
+4) Productionization - Restructured all experimental PoC scripts into a verified production ready pipeline. AI assisted in restructuring the code.
+
+
+
 ## Inference Example
 We provide below the input prompt (common to ALL models - the Teacher (inference mode), Base models (inference mode), and Finetuned models (Inference and Training modes)).
 
@@ -391,40 +430,3 @@ Niter Berbere Butter Chicken with Tamarind Yogurt
 ~~~
 
 ---
-
-## Conclusions
-*   **Summary:**
-  1) Validated the QLoRA technique of LLM finetuning to enhance performance on a custom creative task - generating Fusion Recipes.
-  2) Dataset and finetuned models available on HuggingFace.
-  3) We have deployed the finetuned models on AWS Sagemaker (through an Asynchronous Inference endpoint), as well as an app to view model generated outputs for custom inputs.
-  4) Code for the complete pipeline present in this repository.
-*   **Challenges:** 
-  1) Inference usually takes ~5 minutes per example (~5000 tokens) on a single A10 GPU (since the models output the two base-cuisine recipes and then the fusion recipe). These requests would time out on AWS Sagemaker hosted instances running the DJL (Deep Java Library) inference engine. I wasn't able to find any official solution for this, but a hack discovered while browsing through the opensource implementation was to tweak an environment variable (TODO).
-  2) The Synthetic Data generated has some issues. When prompted, the teacher model usually chooses the same base recipes (Ceviche for Peruvian cuisine, Jollof Rice for West African, BUtter Chicken for Indian etc.). This is perhaps because of the prompt to use 'iconic' recipes from the cuisines. This may cause a partial leakage of information into the test set.
-*   **Next Steps:** 
-  1) A new mode of recipe fusion  - To address Challenge #2 we can rerun the pipeline using a new mode of recipe fusion (where not only the original cuisines, but also their dishes are provided to the model). This mode would put a greater emphasis on the techniques of fusion rather than allowing the model to use safe / standard choices.
-  2) Experiments on amount of training data / training passes on quality - With additional cuisines / using several dishes per cuisine, we can test experimentally the effect of training data on the quality of fusions generated. Another interesting investigation would be the effect of the number of training passes/epochs on the quality.
-
----
-
-## Repository Structure
-*   `main_*.py/`: Various python main files to kick off major pipelines.
-    * `main_train.py/`: Train (Finetune) LLM models and save LoRA weights.
-    * `main_merge.py/`: Merge the LoRA weights with the models' original weights (to give a single merged finetuned model).
-    * `main_infer.py/`: vLLM inference on finetuned models.
-    * `main_evaluate.py/`: Evaluation pipeline (Deterministic + Heuristic + Analysis). Includes batch mode evaluation requests to models for LLM-as-a-judge heuristic evaluation criteria.
-*   `data/`: Raw and processed datasets. (TODO)
-*   `src/`: Functions used by the main_* scripts.
-*   `tests/`: Testing for scripts.
-*   `assets/`: PNG files of generated plots.
-
----
-
-## AI Acknowledgement
-AI Tools (Primarily Google Gemini) have been invaluable in speeding up the write-test-refactor loops, allowing me to focus on high level problem formulation, data engineering and software engineering challenges. All code has been iteratively modified, and optimized by me to fit the system's architectural constraints.
-
-At a more granular level:
-1) Problem design - I formulated the Recipe Fusion concept (initially as a Graph Neural Network problem, but then pivoted to LLM-finetunig) while AI assisted with generating scaffolding code.
-2) Data and ML Ops - Designed the synthetic data generation pipeline, conducted training experiments across Kaggle, Vast.ai and investigated API endpoints (eventually settling on Asynchronous Inference on AWS Sagemaker). AI again assisted with code, and requested iterations / refinements.
-3) Evaluation - Created a standardized evaluation framework and consolidated a multi-dimensional heuristic evaluation component. AI helped flesh out the LLM-as-a-judge prompts.
-4) Productionization - Restructured all experimental PoC scripts into a verified production ready pipeline. AI assisted in restructuring the code.
