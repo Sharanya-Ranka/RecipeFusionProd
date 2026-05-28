@@ -22,8 +22,17 @@ export default function RecipeDAGViewer({ recipe }: { recipe: RecipeJSON }) {
   const activeStep = activeStepIndex !== null ? recipe.steps[activeStepIndex] : null;
 
   return (
+    <div className="flex flex-col w-full">
+      {/* Recipe Description */}
+      {recipe.description && (
+        <div className="mb-8">
+          <p className="text-lg text-gray-700 leading-relaxed">
+            {recipe.description}
+          </p>
+        </div>
+      )}
+
     <div className="flex flex-col md:flex-row gap-8 items-start">
-      
       {/* Left Column: Base Ingredients */}
       <div className="w-full md:w-1/3 space-y-3">
         <h3 className="text-lg font-bold text-gray-800 border-b pb-2 mb-4">Base Ingredients</h3>
@@ -74,6 +83,7 @@ export default function RecipeDAGViewer({ recipe }: { recipe: RecipeJSON }) {
         </div>
       </div>
       
+    </div>
     </div>
   );
 }

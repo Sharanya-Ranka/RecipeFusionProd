@@ -144,7 +144,7 @@ export default function MainPage() {
             >
               <div className="flex items-center gap-2 truncate">
                 <FileText size={16} className="text-gray-400 shrink-0" />
-                <span className="truncate">{job.cuisineA} + {job.cuisineB} ({job.modelName})</span>
+                <span className="truncate" title={`${job.cuisineA} + ${job.cuisineB} (${job.modelName})`}>{job.cuisineA} + {job.cuisineB} ({job.modelName})</span>
               </div>
               {job.status === 'pending' && <Loader2 size={14} className="animate-spin text-indigo-400 shrink-0" />}
             </button>

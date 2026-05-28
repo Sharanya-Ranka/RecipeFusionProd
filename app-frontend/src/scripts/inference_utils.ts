@@ -54,14 +54,12 @@ function getMessagePayload(cuisineA: string, cuisineB: string): Array<{role: str
       }
 export async function sendInferenceRequest(cuisineA: string, cuisineB: string, modelName:string): Promise<Record<string, any>> {
     let modelId:string="";
-    let modelApiUrl:string="";
+    const modelApiUrl:string=import.meta.env.VITE_INFERENCE_LAMBDA_URL;
     if (modelName === import.meta.env.VITE_QWEN_MODELNAME){
         modelId = import.meta.env.VITE_QWEN_MODELID;
-        modelApiUrl = import.meta.env.VITE_QWEN_LAMBDA_URL;
     }
     else if (modelName === import.meta.env.VITE_LLAMA_MODELNAME){
         modelId = import.meta.env.VITE_LLAMA_MODELID;
-        modelApiUrl = import.meta.env.VITE_LLAMA_LAMBDA_URL;
     }
 
 
@@ -80,7 +78,7 @@ export async function sendInferenceRequest(cuisineA: string, cuisineB: string, m
             model_payload: {
                 "model":modelId,
                 "messages": messages_payload,
-                "max_tokens": 5000,
+                "max_tokens": 10000,
                 "temperature": 0.7,
             }
         }),

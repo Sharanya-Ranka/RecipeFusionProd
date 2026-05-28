@@ -72,7 +72,8 @@ export default function Recipe({ job }: { job: FusionJob }) {
 
       {/* Fusion Recipe Details */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Fusion Recipe Data</h3>
+        <h3 className="text-xs text-gray-500 font-bold uppercase mb-1">Fusion Recipe</h3>
+        <h4 className="text-2xl font-bold text-gray-800 mb-4">{parsedData.fusionName}</h4>
         <RecipeDAGViewer recipe={parsedData.fusionData} />
       </div>
 
@@ -81,14 +82,14 @@ export default function Recipe({ job }: { job: FusionJob }) {
         
         {/* Source Recipe A */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-xs text-gray-500 font-bold uppercase mb-1">Source Recipe A</div>
+          <div className="text-xs text-gray-500 font-bold uppercase mb-1">Source Recipe A ({job.cuisineA})</div>
           <h4 className="text-2xl font-bold text-gray-800 mb-4">{parsedData.recipeAName}</h4>
           <RecipeDAGViewer recipe={parsedData.recipeAData} />
         </div>
 
         {/* Source Recipe B */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-xs text-gray-500 font-bold uppercase mb-1">Source Recipe B</div>
+          <div className="text-xs text-gray-500 font-bold uppercase mb-1">Source Recipe B ({job.cuisineB})</div>
           <h4 className="text-2xl font-bold text-gray-800 mb-4">{parsedData.recipeBName}</h4>
           <RecipeDAGViewer recipe={parsedData.recipeBData} />
         </div>
