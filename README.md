@@ -4,6 +4,8 @@ Large Language Models (LLMs) pretrained for general next token prediction **can 
 
 In this project we seek to validate LoRA on the task of "Recipe Fusion" - fusing recipes of 2 different cuisines - requiring knowledge of base cuisines/dishes, effective fusion techniques and general recipe formulation.
 
+Feel free to also check out [RecipeFusion](https://master.d5oeo15dgeb35.amplifyapp.com/) - a web application where you can query for fusions for different cuisines! Under the hood, this app performs inference on these finetuned models and visualizes the output as a recipe card. (Note - inference might take upto 5 minutes)
+
 ---
 
 ## Overview
