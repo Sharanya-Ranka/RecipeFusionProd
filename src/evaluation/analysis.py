@@ -133,8 +133,19 @@ def basic_heuristic_scores_display(granular_df: pd.DataFrame):
         # Group and calculate mean
         mean_scores = subset.groupby(["id", "dimension"])["value"].mean().reset_index()
 
+        breakpoint()
+
         # Create clustered bar plot
-        sns.barplot(data=mean_scores, x="id", y="value", hue="dimension", ax=ax)
+        sns.barplot(
+            data=subset,
+            x="id",
+            y="value",
+            hue="dimension",
+            ax=ax,
+            errorbar="sd",
+            capsize=0.1,
+            err_kws={"color": "black", "linewidth": 2},
+        )
 
         ax.set_title(f"Evaluator: {evaluator}")
         ax.set_ylim(0, 5)
@@ -144,6 +155,7 @@ def basic_heuristic_scores_display(granular_df: pd.DataFrame):
         ax.legend(title="Dimension", bbox_to_anchor=(1.05, 1), loc="upper left")
 
         fig.tight_layout()
+
         plots[f"heuristic_basicdisplay_{evaluator}"] = fig
 
     return plots
@@ -296,7 +308,7 @@ def graphing_pipeline(cfg: DictConfig, df):
     logger.info("Graphing pipeline completed successfully.")
 
 
-def perform_analysis(cfg: DictConfig, granular_df: pd.DataFrame):
+def perform_adhoc_analysis(cfg: DictConfig, granular_df: pd.DataFrame):
     analysis_cfg = cfg.analysis
 
     df = granular_df.loc[
@@ -305,29 +317,60 @@ def perform_analysis(cfg: DictConfig, granular_df: pd.DataFrame):
         & (~(granular_df["value"].isin([0, -1]))),
     ].copy()  # Using .copy() to avoid SettingWithCopyWarning
 
-    conditions = [
-        df["id"].isin(["qwen4bft", "llama8bft"]),
-        df["id"].isin(["qwen4bbase", "llama8bbase"]),
-    ]
-    choices = ["finetuned", "base"]
-    df["model_status"] = np.select(conditions, choices, default="teacher")
+    pivot_df = df.pivot_table(
+        index=["id", "cuisine_a", "cuisine_b", "dimension"],
+        columns="evaluator_model",
+        values="value",
+    ).dropna()
 
-    example_eval_df = (
-        df.drop(columns=["inference_key"])
-        .pivot(
-            index=["id", "cuisine_a", "cuisine_b"],
-            columns=["evaluator_model", "dimension"],
-            values="value",
-        )
-        .reset_index()
+    chatgpt_scores = pivot_df["gpt5mini"]
+    gemini_scores = pivot_df["gemini25flash"]
+
+    kappa_org = cohen_kappa_score(chatgpt_scores, gemini_scores, weights="linear")
+
+    chatgpt_modified = pivot_df["gpt5mini"].replace({1.0: 2.0, 5.0: 4.0})
+    gemini_modified = pivot_df["gemini25flash"].replace({1.0: 2.0, 5.0: 4.0})
+
+    kappa_modified = cohen_kappa_score(
+        chatgpt_modified, gemini_modified, weights="linear"
     )
-    breakpoint()
 
-    finetuning_impact_df = (
-        df.groupby(["id", "model_status", "evaluator_model"])["value"]
-        .mean()
-        .reset_index()
+    logger.info(f"Cohen's Kappa (Original Scores): {kappa_org:.4f}")
+    logger.info(f"Cohen's Kappa (Modified Scores): {kappa_modified:.4f}")
+
+    diff_scores = (chatgpt_scores - gemini_scores).value_counts()
+    diff_scores_modified = (chatgpt_modified - gemini_modified).value_counts()
+
+    logger.info(
+        f"Score differences summary (Original):\n{diff_scores / diff_scores.sum()}"
     )
     logger.info(
-        f"Heuristic summary scores for evaluated models\n{finetuning_impact_df}"
+        f"Score differences summary (Modified):\n{diff_scores_modified / diff_scores_modified.sum()}"
     )
+
+    # conditions = [
+    #     df["id"].isin(["qwen4bft", "llama8bft"]),
+    #     df["id"].isin(["qwen4bbase", "llama8bbase"]),
+    # ]
+    # choices = ["finetuned", "base"]
+    # df["model_status"] = np.select(conditions, choices, default="teacher")
+
+    # example_eval_df = (
+    #     df.drop(columns=["inference_key"])
+    #     .pivot(
+    #         index=["id", "cuisine_a", "cuisine_b"],
+    #         columns=["evaluator_model", "dimension"],
+    #         values="value",
+    #     )
+    #     .reset_index()
+    # )
+    # breakpoint()
+
+    # finetuning_impact_df = (
+    #     df.groupby(["id", "model_status", "evaluator_model"])["value"]
+    #     .mean()
+    #     .reset_index()
+    # )
+    # logger.info(
+    #     f"Heuristic summary scores for evaluated models\n{finetuning_impact_df}"
+    # )

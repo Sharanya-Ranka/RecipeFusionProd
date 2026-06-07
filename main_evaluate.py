@@ -19,7 +19,7 @@ from src.evaluation.deterministic_evaluation import extract_deterministic_evalua
 from src.evaluation.analysis import (
     form_granular_df,
     graphing_pipeline,
-    perform_analysis,
+    perform_adhoc_analysis,
 )
 from src.utils.utils import save_to_jsonl, load_from_jsonl
 from src.utils.types import EvaluationKey, RecipeFusionInferenceKey
@@ -209,9 +209,10 @@ def eval_step_analysis(cfg: DictConfig):
 
     df.to_csv(output_filepath)
 
-    # graphing_pipeline(eval_cfg, df)
+    if eval_cfg.analysis.run_graphing_pipeline:
+        graphing_pipeline(eval_cfg, df)
 
-    perform_analysis(eval_cfg, df)
+    perform_adhoc_analysis(eval_cfg, df)
     logger.info("Completed step: analysis")
 
 

@@ -8,15 +8,15 @@
 # analysis
 # Common config
 # eval_step: "parse"
-eval_step: "deterministic_eval"
+eval_step: "analysis"
 
 evaluation_folder_path: "${data_folderpath}/evaluation"
 
 filenames:
   - qwen4bbase
-  # - qwen4bft
-  # - llama8bbase
-  # - llama8bft
+  - qwen4bft
+  - llama8bbase
+  - llama8bft
   # - residual
   # - chatgpt5mini
 
@@ -54,6 +54,7 @@ evaluations_granular_filename: "recipefusion_evaluations"
 
 # Analysis config
 analysis:
+ run_graphing_pipeline: true
  filter_out_values: [rationale, RecipeA_json_errors, RecipeB_json_errors, RecipeFusion_json_errors, RecipeA_dag_errors, RecipeB_dag_errors, RecipeFusion_dag_errors]
  drop_columns: [inference_key]
 
