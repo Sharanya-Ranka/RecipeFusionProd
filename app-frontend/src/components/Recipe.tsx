@@ -38,7 +38,7 @@ const parseLLMResponse = (text: string): ParsedRecipeResult | null => {
 
 export default function Recipe({ job }: { job: FusionJob }) {
   const rawData: string = job.resultData;
-  console.log("Received job data:", job);
+  // console.log("Received job data:", job);
   
   const textToParse = rawData || DUMMY_RESPONSE;
   const parsedData = useMemo(() => parseLLMResponse(textToParse), [textToParse]);
@@ -51,6 +51,18 @@ export default function Recipe({ job }: { job: FusionJob }) {
         <p className="text-sm mt-2">The model output could not be parsed into the expected JSON format.</p>
         <pre className="mt-4 text-xs bg-white p-4 rounded overflow-auto max-h-64">
           {textToParse}
+        </pre>
+      </div>
+    );
+  }
+
+  if (job.status === 'failed') {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg">
+        <h3 className="font-bold">Job Timeout</h3>
+        <p className="text-sm mt-2">The model took longer than the allowed time to respond.</p>
+        <pre className="mt-4 text-xs bg-white p-4 rounded overflow-auto max-h-64">
+          {JSON.stringify(job, null, 2)}
         </pre>
       </div>
     );

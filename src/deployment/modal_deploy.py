@@ -82,6 +82,8 @@ async def run_vllm_inference_and_upload(request_id: str, payload_dict: dict):
             "--max-model-len",
             str(MAX_MODEL_LEN),
             "--enable-prefix-caching",
+            "--max-cudagraph-capture-size",
+            "10",  # Only optimize for a max batch size of 10. I don't expect the load to be more to justify a higher initial setup time.
         ]
         logger.info("Starting vLLM background process inside container...")
         run_vllm_inference_and_upload.vllm_process = subprocess.Popen(cmd)

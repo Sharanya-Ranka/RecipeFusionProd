@@ -19,7 +19,7 @@ Feel free to also check out [RecipeFusion](https://master.d5oeo15dgeb35.amplifya
 ## Procedure
 1.  **Dataset Construction:** Brainstorming the initial set of cuisines. Then generating a synthetic dataset of recipe fusions using ChatGPT-5-mini.
 2.  **Model Selection:** Qwen-4b, Llama-8b (Open source, relatively light weight models). The instruction-tuned variants of these models were used (so that we can do a proper before/after comparison).
-3.  **Compute:** 1x NVIDIA A10 used for both training (~1.5 hrs per finetuned model) and inference
+3.  **Compute:** 1x NVIDIA A10 used for both training (~1.5 hrs per finetuned model) and the L4 GPU is used for inference (via Modal Inference Platform).
 4. **Technologies:** HuggingFace TRL Library for Finetuning, vLLM serving for inference efficiency (continuous batching, KV cache management etc), PEFT - QLoRA (Parameter Efficient FineTuning - Quantized Low Rank Adaptation) for training.
 
 ---
@@ -112,6 +112,9 @@ At a more granular level:
 We provide below the input prompt (common to ALL models - the Teacher (inference mode), Base models (inference mode), and Finetuned models (Inference and Training modes)).
 
 An example test output from the finetuned Qwen 4 billion parameter model. The average heuristic scores received for this example (both evaluators, averaged over all dimensions) is 4.16 which is above average compared to other outputs from this model.
+
+**App Frontend Display**
+![Ethiopian+Indian RecipeFusion](assets/appfrontend_look.png)
 
 **Input Prompt:**
 ~~~

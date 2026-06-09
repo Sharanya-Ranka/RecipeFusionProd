@@ -273,8 +273,18 @@ export const exampleJob: FusionJob = {
   cuisineA: 'Ethiopian',
   cuisineB: 'Indian',
   modelName: import.meta.env.VITE_QWEN_MODELNAME,
-  s3OutputPath: 'None',
   status: 'completed',
-  timestamp: Date.now(),
+  requestSentTimestamp: Date.now(),
+  lastCheckTimestamp: Date.now(),
   resultData: DUMMY_RESPONSE,
+};
+
+export const exampleJob2: FusionJob = {
+  id: 'req-0e066000-11a5-4962-952e-62e948203c1d',
+  cuisineA: 'Italian',
+  cuisineB: 'Japanese',
+  modelName: import.meta.env.VITE_QWEN_MODELNAME,
+  status: 'pending',
+  requestSentTimestamp: Date.now(), // Simulate a request sent 20 minutes ago
+  lastCheckTimestamp: Date.now(),
 };

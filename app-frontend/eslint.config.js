@@ -20,7 +20,8 @@ export default defineConfig([
     },
     rules: {
   "@typescript-eslint/no-explicit-any": "off",
-  "@typescript-eslint/no-irregular-whitespace": "off"
+  "@typescript-eslint/no-irregular-whitespace": "off",
+  "react-hooks/exhaustive-deps": 'off'
 }
   },
 ])

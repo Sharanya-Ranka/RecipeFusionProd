@@ -79,7 +79,7 @@ def createAndSaveBatchRequests(
         cuisine_a = key.cuisine_a
         cuisine_b = key.cuisine_b
 
-        breakpoint()
+        # breakpoint()
 
         fusion_explain = dp["extracted_data"]["Fusion_Explanation"]
         fusion_recipe = json.dumps(dp["extracted_data"]["RecipeFusion_parsed"])

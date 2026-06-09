@@ -7,9 +7,9 @@ export interface FusionJob {
   cuisineA: string;
   cuisineB: string;
   modelName: string;
-  s3OutputPath: string;
   status: JobStatus;
-  timestamp: number;
+  requestSentTimestamp: number;
+  lastCheckTimestamp: number;
   resultData?: any; 
 }
 

@@ -2,14 +2,20 @@ import React, { useState, useEffect, } from 'react';
 import { Menu, X, Loader2, Plus, FileText, ChevronRight } from 'lucide-react';
 import type {FusionJob} from '../types';
 import Recipe from './Recipe';
-import {exampleJob} from '../constants';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import {exampleJob} from '../constants'; // exampleJob2
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { retrieveInference, sendInferenceRequest } from '../scripts/inference_utils';
 
+const MINUTE = 60000;
+const TICK_TIME_INTERVAL = 0.5 * MINUTE; // Check every 30 seconds for pending jobs
+const POLL_TIME_INTERVALS = [2 * MINUTE, 3 * MINUTE, 5 * MINUTE, 10 * MINUTE, 12 * MINUTE];
+const MAX_TIME_BEFORE_FAIL = POLL_TIME_INTERVALS[POLL_TIME_INTERVALS.length - 1] + 2 * TICK_TIME_INTERVAL; // Mark as failed if pending for more than the longest poll interval + buffer
 
 const loadInitialJobs = (): FusionJob[] => {
   if (typeof window === 'undefined') return [];
   const savedJobs = localStorage.getItem('recipeFusionJobs');
-  console.log("Loaded jobs from localStorage:", savedJobs);
+  // console.log("Loaded jobs from localStorage:", savedJobs);
   if (!savedJobs) return [exampleJob];
   
   try {
@@ -25,6 +31,10 @@ export default function MainPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [jobs, setJobs] = useState<FusionJob[]>(loadInitialJobs);
   const [activeJobId, setActiveJobId] = useState<string | 'new'>('new');
+  const [isFocused, setIsFocused] = useState<boolean>(
+    document.visibilityState === 'visible' && document.hasFocus()
+  );
+  const [tick, setTick] = useState<number>(0);
   
   const [cuisineA, setCuisineA] = useState('');
   const [cuisineB, setCuisineB] = useState('');
@@ -37,6 +47,51 @@ export default function MainPage() {
     console.log("Saved jobs to localStorage:", jobs);
   }, [jobs]);
 
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), TICK_TIME_INTERVAL);
+    return () => clearInterval(timer);
+  }, []);
+
+  function retrieveInferenceMain(jobsToQuery: FusionJob[], mode:string) {
+    console.log("Retrieving inference in mode:", mode);
+    jobsToQuery.forEach(async (job) => {
+        try {
+        console.log("Making an inference request for job:", job.id);
+        const response = await retrieveInference(job.id);
+
+        if (!response) {
+          console.warn(`Job ${job.id} is still pending (empty response). Will check again later.`);
+          setJobs(currentJobs => 
+            currentJobs.map(j => 
+            j.id === job.id 
+                ? { ...j, lastCheckTimestamp: Date.now()} 
+                : j
+            )
+          ); 
+        }
+        else{
+          const resultData = response
+          setJobs(currentJobs => 
+              currentJobs.map(j => 
+              j.id === job.id 
+                  ? { ...j, status: 'completed', resultData , lastCheckTimestamp: Date.now()} 
+                  : j
+              )
+          );
+        }
+        } catch (error) {
+          console.error(`Error polling job ${job.id}:`, error);
+          setJobs(currentJobs => 
+            currentJobs.map(j => 
+            j.id === job.id 
+                ? { ...j, lastCheckTimestamp: Date.now(), status: 'failed' } 
+                : j
+            )
+        );
+        }
+      });
+  }
+
   // 3. Polling Mechanism for pending jobs
   useEffect(() => {
     const pendingJobs = jobs.filter(job => job.status === 'pending');
@@ -44,41 +99,76 @@ export default function MainPage() {
       console.log("No pending jobs found:", jobs);
       return;
     }
+    const currentTime = Date.now();
+    const jobsToQuery = pendingJobs.filter(job => {
+      const timeRequestToLastCheck =  job.lastCheckTimestamp - job.requestSentTimestamp;
+      const timeSinceRequest = currentTime - job.requestSentTimestamp;
 
-    const pollInterval = setInterval(() => {
-      pendingJobs.forEach(async (job) => {
-        try {
-          // Note: Browsers cannot natively fetch 's3://' URIs. 
-          // You will either need an API Gateway/FastAPI proxy endpoint to check this, 
-          // or return a presigned HTTPS URL from your SageMaker invocation.
-        //   const response = await new Promise<{ ok: boolean, json: () => Promise<any>, status: number }>(resolve => 
-        // setTimeout(() => resolve({ ok: true, json: () => Promise.resolve(DUMMY_RESPONSE), status: 200 }), 1000)
-        console.log("Making an inference request for job:", job.id);
-        const response = await retrieveInference(job.id);
-        const resultData = response
-        setJobs(currentJobs => 
-            currentJobs.map(j => 
-            j.id === job.id 
-                ? { ...j, status: 'completed', resultData } 
-                : j
-            )
-        );
-        } catch (error) {
-          console.error(`Error polling job ${job.id}:`, error);
-          // console.error('Using DUMMY_RESPONSE for testing purposes.');
-        //   setJobs(currentJobs => 
-        //     currentJobs.map(j => 
-        //     j.id === job.id 
-        //         ? { ...j, status: 'completed', resultData: DUMMY_RESPONSE } 
-        //         : j
-        //     )
-        // );
-        }
-      });
-    }, 60000); // Poll every 60 seconds
+      for(let i = 0; i < POLL_TIME_INTERVALS.length; i++) {
+        if (timeRequestToLastCheck < POLL_TIME_INTERVALS[i] && timeSinceRequest >= POLL_TIME_INTERVALS[i]) {
+          return true;
+        }      
+      }
+    });
 
-    return () => clearInterval(pollInterval);
-  }, [jobs]);
+    const newFailedJobs = pendingJobs.filter(job => {
+      const timeSinceRequest = currentTime - job.requestSentTimestamp;
+      return timeSinceRequest > MAX_TIME_BEFORE_FAIL;
+    })
+
+    retrieveInferenceMain(jobsToQuery, 'polling');
+
+    newFailedJobs.forEach(job => {
+      console.error(`Job ${job.id} has failed due to timeout.`);
+      setJobs(currentJobs => 
+          currentJobs.map(j => 
+          j.id === job.id 
+              ? { ...j, lastCheckTimestamp: Date.now(), status: 'failed' } 
+              : j
+          )
+      );
+    });
+      
+
+    return;
+  }, [tick]);
+
+  useEffect(() => {
+    if(!isFocused) return;
+    const pendingJobs = jobs.filter(job => job.status === 'pending');
+    if (pendingJobs.length === 0) {
+      console.log("No pending jobs found:", jobs);
+      return;
+    }
+
+    retrieveInferenceMain(pendingJobs, 'focus');
+  }, [isFocused])
+
+  useEffect(() => {
+    const handleFocus = () => setIsFocused(true);
+    const handleBlur = () => setIsFocused(false);
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setIsFocused(true);
+      } else {
+        setIsFocused(false);
+      }
+    };
+
+    // "Back to app" events
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // "Leaving app" events
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -89,18 +179,19 @@ export default function MainPage() {
       // Mocking the SageMaker Async Endpoint call
       // Replace with your actual fetch call to SageMaker or your FastAPI backend
       const response_data = await sendInferenceRequest(cuisineA, cuisineB, modelName);
-
+      // console.log("Received response from inference request:", response_data);
       const newJob: FusionJob = {
         id: response_data.id,
         cuisineA,
         cuisineB,
         modelName,
-        s3OutputPath: "None",
         status: 'pending',
-        timestamp: Date.now(),
+        requestSentTimestamp: Date.now(),
+        lastCheckTimestamp: Date.now(),
       };
 
       setJobs(prev => [newJob, ...prev]);
+      // setNumJobs(prev => prev + 1);
       setActiveJobId(newJob.id);
       setCuisineA('');
       setCuisineB('');

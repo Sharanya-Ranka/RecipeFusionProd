@@ -136,7 +136,7 @@ def extract_parts(output_string):
     parse_recipe_block(recipe_a_block, "RecipeA")
     parse_recipe_block(recipe_b_block, "RecipeB")
     parse_recipe_block(recipe_fusion_block, "RecipeFusion")
-    breakpoint()
+    # breakpoint()
 
     return extracted_data
 
@@ -145,7 +145,7 @@ def parse_recipefusion_str(recipefusion_str):
     eval_str = apply_fixes(recipefusion_str)
     extracted_data = extract_parts(eval_str)
     errors = []
-    breakpoint()
+    # breakpoint()
     for recipe_key in ["RecipeA", "RecipeB", "RecipeFusion"]:
         if f"{recipe_key}_JSON_str" in extracted_data:
             try:
