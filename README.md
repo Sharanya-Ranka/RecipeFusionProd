@@ -55,7 +55,7 @@ All evaluation presented here was done on test data only.
 ![Plot4](assets/heuristic_cuisines_finetuning_impact.png)
 > **Analysis:** We compare Base vs Finetuned vs Teacher models' average scores over all dimensions. We see a consistent improvement in performing fusions for every cuisine (including the completely held out French cuisine). Chinese and Indian cuisines enjoy the largest improvements, while the Nordic cuisine improves only a little. A single experiment contributes its score to the 2 participating cuisines. The French cuisine also showing an improvement suggests that the model has learnt some fusion techniques, and can adapt them to new cuisines.
 
-### 4. Granular impact of finetuning on each cuisine
+### 4. Comparing evaluators' scoring distributions
 ![Plot5](assets/heuristic_evaluation_distributions.png)
 > **Analysis:** Distribution of scores by different evaluators. This plot confirms that ChatGPT's evaluations are centered, while those of Gemini are more diffuse (larger number of 1 and 5 scores assigned).
 
