@@ -59,6 +59,28 @@ All evaluation presented here was done on test data only.
 ![Plot5](assets/heuristic_evaluation_distributions.png)
 > **Analysis:** Distribution of scores by different evaluators. This plot confirms that ChatGPT's evaluations are centered, while those of Gemini are more diffuse (larger number of 1 and 5 scores assigned).
 
+
+### 5. Deterministic Scores
+The following table summarizes instances of errors found while validating the DAG (Directed Acyclic Graph) structure of the model generated recipes.
+
+We sum up errors over 59 test responses per model, and 3 recipes per response (Base Recipe for cuisine A, Base recipe for cuisine B, Fusion Recipe).
+
+Errors explained
+- Dangling Nodes: `Severity: medium` An ingredient / previous step output is processed, but the result is never used in the recipe thereafter. In some examples, later steps *implicitly* use the result, but do not declare it.
+- Invalid sources: `Severity: low` A step in the preparation calls for an input that was never listed as either an ingredient or a previous step output. In many examples this is just a mismatch of the names, or the model inconsistent with the "case" (red chillies vs red_chillies)
+- Cycle detected: `Severity: low` An ingredient or step output is further processed, ultimately leading to the same named output. In examples this usually happens towards the end of recipes when the model apparently 'runs out' of meaningful variable names (especially if there are several finishing/garnishing steps all resulting in the same "finished_\<dish\>" name) 
+- Overwritten Ingredients: `Severity: low` When there are two or more steps that result in the same output. Seen with qwen-4b-finetuned with "chimichurri" where it was both listed as an ingredient and explicitly prepared as well.
+
+
+We observe that finetuning significantly reduces the number of errors we find in recipes (by 55-60%). Furthermore, the quality of the teacher generated data is validated since it has the lowest errors in each category, and overall.
+
+| Model | Dangling Nodes | Invalid Sources | Cycle Detected | Overwritten Ingredients | Total Errors |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **qwen4bbase** | 165 | 138 | 3 | 2 | **308** |
+| **qwen4bft** | 76 | 38 | 2 | 3 | **119** |
+| **llama8bbase** | 122 | 79 | 39 | 4 | **244** |
+| **llama8bft** | 85 | 24 | 0 | 0 | **109** |
+| **chatgpt5mini** | 51 | 24 | 0 | 0 | **75** |
 ---
 
 ## Other points to mention
